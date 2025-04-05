@@ -1,0 +1,230 @@
+[
+  {
+    "type": "function",
+    "name": "claim",
+    "inputs": [
+      { "name": "streamId", "type": "bytes32", "internalType": "bytes32" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "getCctpDomainId",
+    "inputs": [
+      { "name": "chainId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [
+      { "name": "domainId", "type": "uint32", "internalType": "uint32" }
+    ],
+    "stateMutability": "pure"
+  },
+  {
+    "type": "function",
+    "name": "getChainId",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getStream",
+    "inputs": [
+      { "name": "streamId", "type": "bytes32", "internalType": "bytes32" }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "internalType": "struct Paytocol.Stream",
+        "components": [
+          { "name": "streamId", "type": "bytes32", "internalType": "bytes32" },
+          { "name": "sender", "type": "address", "internalType": "address" },
+          {
+            "name": "senderChainId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          { "name": "recipient", "type": "address", "internalType": "address" },
+          {
+            "name": "recipientChainId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "token",
+            "type": "address",
+            "internalType": "contract IERC20"
+          },
+          {
+            "name": "tokenAmountPerInterval",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "tokenAmountClaimed",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "lastClaimedAt",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          { "name": "startedAt", "type": "uint256", "internalType": "uint256" },
+          { "name": "interval", "type": "uint256", "internalType": "uint256" },
+          {
+            "name": "intervalCount",
+            "type": "uint32",
+            "internalType": "uint32"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "openStreamViaCctp",
+    "inputs": [
+      {
+        "name": "cctpV2TokenMessenger",
+        "type": "address",
+        "internalType": "contract ICctpV2TokenMessenger"
+      },
+      { "name": "cctpMaxFee", "type": "uint256", "internalType": "uint256" },
+      {
+        "name": "cctpMinFinalityThreshold",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      { "name": "recipient", "type": "address", "internalType": "address" },
+      {
+        "name": "recipientChainId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "recipientChainPaytocol",
+        "type": "address",
+        "internalType": "address"
+      },
+      { "name": "token", "type": "address", "internalType": "contract IERC20" },
+      {
+        "name": "tokenAmountPerInterval",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      { "name": "startedAt", "type": "uint256", "internalType": "uint256" },
+      { "name": "interval", "type": "uint256", "internalType": "uint256" },
+      { "name": "intervalCount", "type": "uint32", "internalType": "uint32" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "relayStreamViaCctp",
+    "inputs": [
+      {
+        "name": "cctpV2MessageTransmitter",
+        "type": "address",
+        "internalType": "contract ICctpV2MessageTransmitter"
+      },
+      {
+        "name": "cctpV2TokenMinter",
+        "type": "address",
+        "internalType": "contract ICctpV2TokenMinter"
+      },
+      { "name": "message", "type": "bytes", "internalType": "bytes" },
+      { "name": "attestation", "type": "bytes", "internalType": "bytes" }
+    ],
+    "outputs": [
+      { "name": "streamId", "type": "bytes32", "internalType": "bytes32" }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "StreamClaimed",
+    "inputs": [
+      {
+        "name": "streamId",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "timestamp",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "StreamOpened",
+    "inputs": [
+      {
+        "name": "streamId",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "sender",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "recipient",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "StreamRelayed",
+    "inputs": [
+      {
+        "name": "streamId",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "senderChainId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "recipientChainId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  { "type": "error", "name": "ChainUnsupported", "inputs": [] },
+  {
+    "type": "error",
+    "name": "SafeERC20FailedOperation",
+    "inputs": [
+      { "name": "token", "type": "address", "internalType": "address" }
+    ]
+  }
+]
