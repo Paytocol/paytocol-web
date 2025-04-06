@@ -3,147 +3,16 @@ import Image from "next/image";
 import { PaymentHistoryItem } from "./components/PaymentHistoryItem";
 import { PhoneFrame } from "./components/PhoneFrame";
 import { ProfileHeader } from "./components/ProfileHeader";
+import { ConfirmSubscriptionButton } from "./components/ConfirmSubscriptionButton";
 
-import {
-  Contract,
-  JsonRpcProvider,
-  keccak256,
-  TransactionResponse,
-  Wallet,
-  zeroPadValue,
-} from "ethers"
-
-import PaytocolAbi from "./abi/Paytocol.json"
-import UsdcAbi from "./abi/USDC.json"
-import MessageTransmitterAbi from "./abi/cctp/MessageTransmitter.json"
-import config from "./utils/config"
+import { sepolia, baseSepolia } from "viem/chains"
 import network from "./utils/network"
 
-const sepoliaPaytocolAddress = "0x059f1d6Aaa4Aaf4138968c245A290819e9118EcE"
-const baseSepoliaPaytocolAddress = "0x38080FaF738075F605d99AA48b7F25291AE394C6"
-
-const sepoliaProvider = new JsonRpcProvider(
-  network.sepolia.url,
-  network.sepolia.chainId,
-)
-const baseSepoliaProvider = new JsonRpcProvider(
-  network.baseSepolia.url,
-  network.baseSepolia.chainId,
-)
-
-const sepoliaCaller = new Wallet(config.operator.privateKey, sepoliaProvider)
-const sepoliaUsdc = new Contract(
-  network.sepolia.address.token.Usdc,
-  UsdcAbi,
-  sepoliaCaller,
-)
-const sepoliaPaytocol = new Contract(
-  sepoliaPaytocolAddress,
-  PaytocolAbi,
-  sepoliaCaller,
-)
+// 定義合約地址
+const sepoliaPaytocolAddress = "0x059f1d6Aaa4Aaf4138968c245A290819e9118EcE" as const
+const baseSepoliaPaytocolAddress = "0x38080FaF738075F605d99AA48b7F25291AE394C6" as const
 
 export default function Home() {
-
-  async function submitSubscription(e: React.MouseEvent<HTMLButtonElement>) {
-    e.preventDefault()
-    
-    const sepoliaPaytocolAddress = "0x059f1d6Aaa4Aaf4138968c245A290819e9118EcE"
-    const baseSepoliaPaytocolAddress =
-      "0x38080FaF738075F605d99AA48b7F25291AE394C6"
-  
-    const sepoliaProvider = new JsonRpcProvider(
-      network.sepolia.url,
-      network.sepolia.chainId,
-    )
-    const baseSepoliaProvider = new JsonRpcProvider(
-      network.baseSepolia.url,
-      network.baseSepolia.chainId,
-    )
-  
-    /* Source domain */
-  
-    const sepoliaCaller = new Wallet(config.operator.privateKey, sepoliaProvider)
-    const sepoliaUsdc = new Contract(
-      network.sepolia.address.token.Usdc,
-      UsdcAbi,
-      sepoliaCaller,
-    )
-    const sepoliaPaytocol = new Contract(
-      sepoliaPaytocolAddress,
-      PaytocolAbi,
-      sepoliaCaller,
-    )
-    // console.log("Approve USDC to Paytocol...")
-    // const approveTx: TransactionResponse = await sepoliaUsdc.approve(
-    //   await sepoliaPaytocol.getAddress(),
-    //   10000000,
-    // )
-    // await approveTx.wait()
-  
-    console.log("Open stream via CCTP on Sepolia...")
-    const openTx: TransactionResponse = await sepoliaPaytocol.openStreamViaCctp(
-      "0x8fe6b999dc680ccfdd5bf7eb0974218be2542daa",
-      0,
-      1000,
-      sepoliaCaller.address,
-      network.baseSepolia.chainId,
-      baseSepoliaPaytocolAddress,
-      network.sepolia.address.token.Usdc,
-      1,
-      Math.floor(new Date().getTime() / 1000),
-      10,
-      10,
-    )
-    await openTx.wait()
-    console.log("Open stream tx hash", openTx.hash)
-  
-    console.log("Fetching attestation...")
-    const url = `https://iris-api-sandbox.circle.com/v2/messages/${network.sepolia.domain}?transactionHash=${openTx.hash}`
-  
-    let attestation: {
-      message: string
-      attestation: string
-    }
-    let round = 0
-    while (true) {
-      try {
-        const response = await (await fetch(url)).json()
-        console.log("Attestation", response)
-        if (response.messages?.[0]?.status === "complete") {
-          attestation = {
-            message: response.messages?.[0]?.message,
-            attestation: response.messages?.[0]?.attestation,
-          }
-          break
-        }
-        console.log(`Waiting for next round ${++round}`)
-        await new Promise((resolve) => setTimeout(resolve, 5000))
-      } catch (error) {
-        throw error
-      }
-    }
-  
-    const baseSepoliaCaller = new Wallet(
-      config.operator.privateKey,
-      baseSepoliaProvider,
-    )
-    const basePaytocol = new Contract(
-      baseSepoliaPaytocolAddress,
-      PaytocolAbi,
-      baseSepoliaCaller,
-    )
-    console.log("Relay stream via CCTP on Base Sepolia...")
-    const relayTx: TransactionResponse = await basePaytocol.relayStreamViaCctp(
-      "0xe737e5cebeeba77efe34d4aa090756590b1ce275",
-      "0xb43db544e2c27092c107639ad201b3defabcf192",
-      attestation.message,
-      attestation.attestation,
-    )
-    await relayTx.wait()
-    console.log("Relay stream tx hash", relayTx.hash)
-  }
-
   return (
     <div className="p-12 bg-[#F7F3F0]">
       <div className="appkit-buttons-container fixed top-4 right-4 z-50">
@@ -177,9 +46,13 @@ export default function Home() {
               </div>
             </div>
 
-            <button onClick={(e) => submitSubscription(e)} className="w-full py-4 px-6 text-center text-lg text-white font-semibold bg-[#7DDBB6] hover:bg-[#65C4A0] rounded-md transition-all duration-200">
-              Confirm Subscription
-            </button>
+            <ConfirmSubscriptionButton
+              amount={10}
+              frequency={30}
+              totalPayments={12}
+              paytocolAddress={sepoliaPaytocolAddress}
+              recipient="0x8fe6b999dc680ccfdd5bf7eb0974218be2542daa"
+            />
           </section>
         </PhoneFrame>
 
