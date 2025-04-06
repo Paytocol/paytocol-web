@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppKit } from './context/appkit'
+import { Providers } from "./providers";
+
 
 export const metadata = {
   title: 'Paytocol',
@@ -29,9 +31,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AppKit>
-          {children}
-        </AppKit>
+        <Providers>
+          <AppKit>
+            {children}
+          </AppKit>
+        </Providers>
       </body>
     </html>
   );
