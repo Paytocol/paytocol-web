@@ -2,9 +2,11 @@
 
 import { useState } from 'react'
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+import { sepolia, baseSepolia } from 'viem/chains'
 
 // 引入合約 ABI
 import PaytocolAbi from "../abi/Paytocol.json"
+import network from "../utils/network"
 
 interface ConfirmSubscriptionButtonProps {
   amount: number
@@ -35,28 +37,39 @@ export function ConfirmSubscriptionButton({
   })
 
   const handleSubscribe = async () => {
-    if (!address) return
+    if (!address) {
+      console.error('錢包未連接')
+      return
+    }
 
     try {
       setIsLoading(true)
+      
+      // 記錄當前連接的錢包地址
+      console.log('使用錢包地址:', address)
+      
+      // 使用 AppKit 連接的錢包執行交易
       await writeContractAsync({
         address: paytocolAddress as `0x${string}`,
         abi: PaytocolAbi,
         functionName: 'openStreamViaCctp',
         args: [
-          recipient,
-          0,
-          amount * 10**6, // 假設 USDC 有 6 位小數
+          recipient as `0x${string}`,
+          BigInt(0),
+          BigInt(amount * 10**6), // 假設 USDC 有 6 位小數
           address,
-          1, // chainId - 根據需要調整
-          paytocolAddress, // 目標鏈上的地址
-          "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC 地址 - 根據需要調整
-          1,
-          Math.floor(new Date().getTime() / 1000),
-          frequency,
-          totalPayments,
+          BigInt(baseSepolia.id), // 使用 Base Sepolia 的 chainId
+          paytocolAddress as `0x${string}`, // 目標鏈上的地址
+          network.sepolia.address.token.Usdc as `0x${string}`, // 使用配置中的 USDC 地址
+          BigInt(1),
+          BigInt(Math.floor(new Date().getTime() / 1000)),
+          BigInt(frequency),
+          BigInt(totalPayments),
         ],
+        chainId: sepolia.id,
       })
+      
+      console.log('交易已提交')
     } catch (error) {
       console.error('訂閱失敗:', error)
     } finally {
@@ -65,14 +78,15 @@ export function ConfirmSubscriptionButton({
   }
 
   const buttonText = isLoading || isPending || isConfirming
-    ? 'Processing...'
+    ? '處理中...'
     : !isConnected
-    ? 'Please connect your wallet'
-    : 'Confirm Subscription'
+    ? '請先連接錢包'
+    : '確認訂閱'
 
   return (
     <button
       onClick={handleSubscribe}
+      disabled={!isConnected || isLoading || isPending || isConfirming}
       className={`w-full py-4 px-6 text-center text-lg text-white font-semibold 
         bg-[#7DDBB6] hover:bg-[#65C4A0] rounded-md transition-all duration-200
         disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
