@@ -1,7 +1,5 @@
 import { Wallet } from "ethers"
 
-import "dotenv/config"
-
 console.log(process.env.NEXT_PUBLIC_OPERATOR_PRIVATE_KEY)
 
 
